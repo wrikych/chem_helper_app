@@ -231,3 +231,67 @@ def eq_to_eq_report(eq_string):
     
     return r_coef, reactants, p_coef, products
 
+def calculate_molar_mass(comp_dict):
+    
+    molar_mass = 0
+    
+    for key in comp_dict.keys():
+        
+        multiplier = comp_dict[key]
+        
+        molar_mass += multiplier * periodic_table[key]
+    
+    return molar_mass
+
+def return_molar_mass(reactants, products):
+    
+    RMM_dict = {}
+    PMM_dict = {}
+    both_parts = [reactants, products]
+    i = 0
+    
+    for part in both_parts:
+        for val in part:
+            for_mm = parse_compound_formula(val)
+            if i == 0:
+                RMM_dict[val] = calculate_molar_mass(for_mm)
+            else:
+                PMM_dict[val] = calculate_molar_mass(for_mm)
+        i += 1
+        
+    return RMM_dict, PMM_dict
+
+def determine_limiting_reactant(reacts_molar, given_masses, r_coef, reactants):
+    
+    resultant_moles = {}
+    theoretical_moles = {}
+    differential = {}
+    
+    for key in reacts_molar.keys():
+        if key in list(given_masses.keys()):
+            resultant_moles[key] = given_masses[key]/reacts_molar[key]
+    
+    for i in range(len(reactants)):
+        comp = reactants[i]
+        theoretical_moles[comp] = unique_elements_in_sublists(r_coef)[i]
+    
+    for val in resultant_moles.keys():
+        differential[val] = resultant_moles[val] // theoretical_moles[val]
+        
+    min_key = min(differential, key=lambda x: differential[x])
+    
+    return min_key, given_masses[min_key], theoretical_moles
+
+def mass_to_mass(start, end, given_mass, moles, molar_masses, p_coef, products):
+    
+    
+    
+    final_mass = given_mass
+    step1 = final_mass / molar_masses[start]
+    step2 = step1 / moles[start]
+    step3 = step2 * moles[end]
+    step4 = step3 * molar_masses[end]
+    
+    print(f"From {given_mass}g of {start}, we get {step1} moles of {start}.")
+    print(f"This results in a scale factor of {step2}, and since there are {moles[start]} moles of {start} for every {moles[end]} of {end},")
+    print(f"this results in a total of {step3} moles for {end}, which corresponds to {step4}g {end}.")
